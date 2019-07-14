@@ -1,0 +1,9 @@
+database: 
+  host     : "imdb.csnbws2ql3w6.us-east-2.rds.amazonaws.com"
+  port     : 5432
+  user     : "imdb"
+  password : "fyndimdb"
+  dbname   : "imdb"
+
+server:
+  port: ":8080"
