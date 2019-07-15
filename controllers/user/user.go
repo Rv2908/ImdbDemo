@@ -3,12 +3,15 @@ package user
 import(
 	"fmt"
 	model "Imdb/model/user"
+	"database/sql"
 ) 
 
-type User struct{}
+type User struct{
+	db *sql.DB
+}
 
-func NewUser() User {
-	return User{}
+func NewUser(db *sql.DB) User {
+	return User{db}
 }
 
 func (u User) Add(name, email, phone, password string) (*model.User,error) {
