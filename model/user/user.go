@@ -1,29 +1,27 @@
 package model
 
-
 // User Details
-type User struct{
-	ID uint
+type User struct {
+	ID        uint
 	FirstName string
-	LastName string
-
+	LastName  string
 }
 
 // UserRole Specifies users role
 type UserRole struct {
-	ID uint
+	ID   uint
 	Role string
 }
 
 //UserLoginDetail Store User login details
 type UserLoginDetail struct {
-	ID uint
-	Email string
+	ID       uint
+	Email    string
 	Password string
 }
 
 //UserCredential stores the auth token of the user
 type UserCredential struct {
-	ID uint
+	ID    uint
 	Token string
 }
