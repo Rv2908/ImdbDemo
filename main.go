@@ -26,12 +26,12 @@ func main() {
 	logger.Println("Database Created")
 
 	mux := http.NewServeMux()
-	srv := server.New(mux, ":8080")
+	srv := server.New(mux, ":3000")
 	mux.HandleFunc("/", sayHello)
 	logger.Println("server starting")
 	// create controllers
 	uc := userController.NewUser(db)
-	userRouter.NewUserRouter(uc).Register(mux)
+	userRouter.NewUserRouter(uc, logger).Register(mux)
 	if err := srv.ListenAndServe(); err != nil {
 		panic(err)
 	}

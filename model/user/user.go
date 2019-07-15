@@ -1,27 +1,25 @@
 package model
 
+import "time"
+
 // User Details
 type User struct {
 	ID        uint
-	FirstName string
-	LastName  string
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	RoleID    uint   `json:"role_id"`
 }
 
-// UserRole Specifies users role
-type UserRole struct {
-	ID   uint
-	Role string
-}
-
-//UserLoginDetail Store User login details
-type UserLoginDetail struct {
-	ID       uint
-	Email    string
-	Password string
-}
-
-//UserCredential stores the auth token of the user
-type UserCredential struct {
-	ID    uint
-	Token string
+// Role Specifies users role
+type Role struct {
+	ID        uint
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	DeletedAt *time.Time
+	Role      string `json:"role"`
 }
