@@ -2,8 +2,8 @@ package main
 
 import (
 	userController "Imdb/controllers/user"
-	userRouter "Imdb/routers/user"
 	"Imdb/database"
+	userRouter "Imdb/routers/user"
 	"Imdb/server"
 	"log"
 	"os"
