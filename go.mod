@@ -1,3 +1,3 @@
-module Imdb
+module github.com/Rv2908/Imdb
 
-require github.com/lib/pq v1.1.1
+go 1.12
