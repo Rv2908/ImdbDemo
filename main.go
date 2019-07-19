@@ -1,8 +1,10 @@
 package main
 
 import (
+	movieController "Imdb/controllers/movie"
 	userController "Imdb/controllers/user"
 	"Imdb/database"
+	movieRouter "Imdb/routers/movie"
 	userRouter "Imdb/routers/user"
 	"Imdb/server"
 	"log"
@@ -31,7 +33,9 @@ func main() {
 	logger.Println("server starting")
 	// create controllers
 	uc := userController.NewUser(db)
+	mv := movieController.NewMovie(db)
 	userRouter.NewUserRouter(uc, logger).Register(mux)
+	movieRouter.NewMovieRouter(mv, logger).Register(mux)
 	if err := srv.ListenAndServe(); err != nil {
 		panic(err)
 	}

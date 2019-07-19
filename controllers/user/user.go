@@ -8,14 +8,17 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+//User it contains the instance of database
 type User struct {
 	db *sql.DB
 }
 
+//NewUser this will return the instance of user with database instance in it
 func NewUser(db *sql.DB) User {
 	return User{db}
 }
 
+//Add this will create a new user
 func (u User) Add(user *model.User) (*model.User, error) {
 
 	hashedPassword, errPassword := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
