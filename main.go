@@ -7,6 +7,7 @@ import (
 	movieRouter "Imdb/routers/movie"
 	userRouter "Imdb/routers/user"
 	"Imdb/server"
+	"Imdb/token"
 	"log"
 	"os"
 
@@ -29,7 +30,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	srv := server.New(mux, ":3000")
-	mux.HandleFunc("/", sayHello)
+	mux.HandleFunc("/", token.JWTMiddleware(sayHello))
 	logger.Println("server starting")
 	// create controllers
 	uc := userController.NewUser(db)
