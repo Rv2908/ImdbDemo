@@ -48,7 +48,7 @@ func (mv Movie) DeleteMovie(MovieID uint) error {
 		return err
 	}
 
-	sqlStatementDeleteMapping := `DELETE FROM movie_genre
+	sqlStatementDeleteMapping := `DELETE FROM movie_genres
 	WHERE movie_id = $1`
 	_, err = tx.Exec(sqlStatementDeleteMapping, MovieID)
 	if err != nil {
@@ -65,11 +65,11 @@ func (mv Movie) AddGenre(MovieID, GenreID uint) (*movie.Movie, error) {
 	genreMovie := new(movie.Movie)
 
 	var id uint
-	sqlStatementFindRecord := "select id from movie_genre where movie_id=$1 and genre_id= $2"
+	sqlStatementFindRecord := "select id from movie_genres where movie_id=$1 and genre_id= $2"
 	row := mv.db.QueryRow(sqlStatementFindRecord, MovieID, GenreID)
 	switch err := row.Scan(&id); err {
 	case sql.ErrNoRows:
-		sqlStatementAddGenre := `INSERT INTO movie_genre(genre_id,movie_id) VALUES ($1, $2)`
+		sqlStatementAddGenre := `INSERT INTO movie_genres(genre_id,movie_id) VALUES ($1, $2)`
 		_, err := mv.db.Exec(sqlStatementAddGenre, GenreID, MovieID)
 		if err != nil {
 			return nil, err
@@ -85,7 +85,7 @@ func (mv Movie) AddGenre(MovieID, GenreID uint) (*movie.Movie, error) {
 //DeleteMovieGenre Delete the movie genre
 func (mv Movie) DeleteMovieGenre(ID uint) error {
 	sqlStatement := `
-					DELETE FROM movie_genre
+					DELETE FROM movie_genres
 					WHERE id = $1;`
 	_, err := mv.db.Exec(sqlStatement, ID)
 	if err != nil {
