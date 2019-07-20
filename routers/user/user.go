@@ -13,11 +13,13 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// User contains the instance of user controller and logger instance
 type User struct {
 	userController interfaces.User
 	logger         *log.Logger
 }
 
+//Logger log all the incoming method to user route
 func (u User) Logger(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		startTime := time.Now()
@@ -26,6 +28,7 @@ func (u User) Logger(next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+//NewUserRouter Return instance of User Router
 func NewUserRouter(userController interfaces.User, logger *log.Logger) User {
 	return User{
 		userController: userController,
@@ -33,6 +36,7 @@ func NewUserRouter(userController interfaces.User, logger *log.Logger) User {
 	}
 }
 
+//Register This method consist of all the routes for the user
 func (u User) Register(s *http.ServeMux) {
 	s.HandleFunc("/user", u.Logger(u.addUser))
 	s.HandleFunc("/user/signin", u.Logger(u.signin))

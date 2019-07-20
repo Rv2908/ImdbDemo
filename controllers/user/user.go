@@ -57,11 +57,11 @@ func (u User) Signin(EmailID string) (user.UserResponse, error) {
 					left join roles rl on ur.role_id = rl.id
 					where ur.email like $1`
 
-	if err := u.db.QueryRow(sqlStatement, EmailID).Scan(&userInfo.FirstName, 
-			&userInfo.LastName,
-			&userInfo.Email,
-			&userInfo.Password,
-			&userInfo.Role); err != nil {
+	if err := u.db.QueryRow(sqlStatement, EmailID).Scan(&userInfo.FirstName,
+		&userInfo.LastName,
+		&userInfo.Email,
+		&userInfo.Password,
+		&userInfo.Role); err != nil {
 		return userInfo, err
 	}
 
