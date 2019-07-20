@@ -44,24 +44,24 @@ func AdminMiddleware(next http.HandlerFunc) http.HandlerFunc {
 		// get authorization token from header
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
-			w.Write([]byte(errors.New("Only admin can access this api").Error()))
+			w.Write([]byte(errors.New("Not Authorized").Error()))
 			return
 		}
 		// split jwt token
 		a := strings.Split(auth, " ")
 		if len(a) != 2 {
-			w.Write([]byte(errors.New("Only admin can access this api").Error()))
+			w.Write([]byte(errors.New("Not Authorized").Error()))
 			return
 		}
 		// get payload information from token
 		_, isAdmin, err := ParseToken(a[1])
 		if err != nil {
 			fmt.Println("Error in admin middleware:", err)
-			w.Write([]byte(errors.New("Only admin can access this api").Error()))
+			w.Write([]byte(errors.New("Not Authorized").Error()))
 			return
 		}
 		if !isAdmin {
-			w.Write([]byte(errors.New("Only admin can access this api").Error()))
+			w.Write([]byte(errors.New("Not Authorized").Error()))
 			return
 		}
 		// call next handler

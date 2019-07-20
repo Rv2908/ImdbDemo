@@ -1,7 +1,7 @@
 package user
 
 import (
-	model "Imdb/model/user"
+	user "Imdb/model/user"
 	"database/sql"
 	"time"
 
@@ -19,7 +19,7 @@ func NewUser(db *sql.DB) User {
 }
 
 //Add this will create a new user
-func (u User) Add(user *model.User) (*model.User, error) {
+func (u User) Add(user *user.User) (*user.User, error) {
 
 	hashedPassword, errPassword := bcrypt.GenerateFromPassword([]byte(user.Password), 8)
 	if errPassword != nil {
@@ -32,4 +32,38 @@ func (u User) Add(user *model.User) (*model.User, error) {
 	}
 
 	return user, nil
+}
+
+//Signin Login the user and send the authentication token
+func (u User) Signin(EmailID string) (user.UserResponse, error) {
+	type UserInfo struct {
+		Password string `json:"password"`
+		Role     string `json:"role"`
+	}
+
+	var userInfo user.UserResponse
+
+	// Get the existing entry present in the database for the given username
+	sqlStatement := `select 
+					ur.first_name,
+					ur.last_name,
+					ur.email,
+					ur.password ,
+					case 
+						when rl.role = 'Admin' then true
+						else false
+					end as role
+					from users ur
+					left join roles rl on ur.role_id = rl.id
+					where ur.email like $1`
+
+	if err := u.db.QueryRow(sqlStatement, EmailID).Scan(&userInfo.FirstName, 
+			&userInfo.LastName,
+			&userInfo.Email,
+			&userInfo.Password,
+			&userInfo.Role); err != nil {
+		return userInfo, err
+	}
+
+	return userInfo, nil
 }

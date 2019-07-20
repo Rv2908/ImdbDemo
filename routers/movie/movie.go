@@ -2,6 +2,9 @@ package movie
 
 import (
 	interfaces "Imdb/interfaces/movie"
+	movie "Imdb/model/movie"
+	middleware "Imdb/token"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -32,17 +35,12 @@ func NewMovieRouter(movieController interfaces.Movie, logger *log.Logger) Movie 
 	}
 }
 
-// MethodHandler Identifies the Method and call the api accordingly
-func (mv Movie) MethodHandler(w http.ResponseWriter, r *http.Request) {
+// MethodHandlerMovie Identifies the Method and call the api accordingly
+func (mv Movie) MethodHandlerMovie(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 
 	case http.MethodGet:
-		ID := getQueryKey(r)
-		if ID == 0 {
-			mv.getMovies(w, r)
-		} else {
-			mv.getMovie(w, r)
-		}
+		mv.getMovie(w, r)
 
 	case http.MethodPost:
 		mv.addMovie(w, r)
@@ -59,27 +57,114 @@ func (mv Movie) MethodHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// MethodHandlerGenre Identifies the Method and call the api accordingly
+func (mv Movie) MethodHandlerGenre(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+
+	case http.MethodPost:
+		mv.addMovieGenre(w, r)
+	case http.MethodDelete:
+		mv.deleteMovieGenre(w, r)
+
+	default:
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Println("Unknown Method Type")
+	}
+}
+
 //Register This method consist of all the routes for the movie
 func (mv Movie) Register(s *http.ServeMux) {
-	s.Handle("/movie/", mv.Logger(http.HandlerFunc(mv.MethodHandler)))
+	s.Handle("/movie/", mv.Logger(middleware.JWTMiddleware(middleware.AdminMiddleware(http.HandlerFunc(mv.MethodHandlerMovie)))))
+	s.Handle("/genre/", mv.Logger(middleware.JWTMiddleware(middleware.AdminMiddleware(http.HandlerFunc(mv.MethodHandlerGenre)))))
+	s.HandleFunc("/movie", mv.Logger(middleware.JWTMiddleware(mv.getMovies)))
+}
+
+func (mv Movie) getMovies(w http.ResponseWriter, r *http.Request) {
+
+	pageNo := getQueryUint(r, "pageNo")
+	pageSize := getQueryUint(r, "pageSize")
+	searchBy := getQueryString(r, "search")
+
+	movie, err := mv.movieController.GetAllMovie(pageNo, pageSize, searchBy)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+	}
+	b, _ := json.Marshal(movie)
+
+	w.Write(b)
+}
+
+func (mv Movie) getMovie(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("Called getMovie")
+	MovieID := getQueryKey(r)
+	if MovieID == 0 {
+		w.Write([]byte("Movie ID is missing"))
+	}
+
+	movie, err := mv.movieController.GetMovie(MovieID)
+	if err != nil {
+		w.Write([]byte(err.Error()))
+	}
+	b, _ := json.Marshal(movie)
+
+	w.Write(b)
+
+}
+
+func (mv Movie) deleteMovieGenre(w http.ResponseWriter, r *http.Request) {
+	ID := getQueryKey(r)
+	fmt.Println("Delete Movie_ Genre Having ID ", ID)
+	if err := mv.movieController.DeleteMovieGenre(ID); err != nil {
+		fmt.Println(err.Error())
+		w.Write([]byte(err.Error()))
+		return
+	}
+	w.Write([]byte("Movie Genre Deleted Successfully"))
+}
+
+func (mv Movie) addMovieGenre(w http.ResponseWriter, r *http.Request) {
+	type Request struct {
+		MovieID uint   `json:"movie_id"`
+		Genres  []uint `json:"genres"`
+	}
+
+	request := &Request{}
+	if err := json.NewDecoder(r.Body).Decode(request); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	fmt.Println(request)
+
+	mve, err := mv.movieController.AddGenre(request.MovieID, request.Genres)
+	if err != nil {
+		fmt.Println(err.Error())
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	b, _ := json.Marshal(mve)
+	w.Write(b)
+
 }
 
 func (mv Movie) addMovie(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Called addMovie")
-	w.Write([]byte("Success"))
-	// movie := &movie.Movie{}
-	// if err := json.NewDecoder(r.Body).Decode(movie); err != nil {
-	// 	w.WriteHeader(http.StatusBadRequest)
-	// 	return
-	// }
-	// fmt.Println(movie)
-	// if _, err := mv.movieController.AddMovie(movie); err != nil {
-	// 	fmt.Println(err.Error())
-	// 	w.Write([]byte(err.Error()))
-	// 	return
-	// }
 
-	// w.Write([]byte("Movie Created Successfully"))
+	movie := &movie.MovieRequest{}
+	if err := json.NewDecoder(r.Body).Decode(movie); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	fmt.Println(movie)
+	mve, err := mv.movieController.AddMovie(movie)
+	if err != nil {
+		fmt.Println(err.Error())
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	b, _ := json.Marshal(mve)
+	w.Write(b)
 }
 
 func (mv Movie) deleteMovie(w http.ResponseWriter, r *http.Request) {
@@ -93,25 +178,23 @@ func (mv Movie) deleteMovie(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Movie Deleted Successfully"))
 }
 
-func (mv Movie) getMovies(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Called getMovies")
-	w.Write([]byte("Success"))
-
-}
-
 func (mv Movie) updateMovie(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("Called updateMovie")
-	w.Write([]byte("Success"))
-}
+	movie := &movie.MovieUpdate{}
+	if err := json.NewDecoder(r.Body).Decode(movie); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-func (mv Movie) getMovie(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Called getMovie")
-	w.Write([]byte("Success"))
-	// MovieID := getQueryKey(r)
-	// if MovieID == 0 {
-	// 	w.Write([]byte("Movie ID is missing"))
-	// }
+	mve, err := mv.movieController.UpdateMovie(movie)
+	if err != nil {
+		fmt.Println(err.Error())
+		w.Write([]byte(err.Error()))
+		return
+	}
 
+	b, _ := json.Marshal(mve)
+	w.Write(b)
 }
 
 func getQueryKey(r *http.Request) uint {
@@ -127,4 +210,41 @@ func getQueryKey(r *http.Request) uint {
 	}
 
 	return uint(movieID)
+}
+
+func getQueryString(r *http.Request, param string) string {
+	keys, ok := r.URL.Query()[param]
+	if !ok || len(keys[0]) < 1 {
+		return ""
+	}
+
+	return keys[0]
+}
+
+func getQueryUint(r *http.Request, param string) uint {
+	keys, ok := r.URL.Query()[param]
+	if !ok || len(keys[0]) < 1 {
+		return 0
+	}
+
+	ID, err := strconv.ParseUint(keys[0], 10, 32)
+	if err != nil {
+		return 0
+	}
+
+	return uint(ID)
+}
+
+func getQueryfloat(r *http.Request, param string) float32 {
+	keys, ok := r.URL.Query()[param]
+	if !ok || len(keys[0]) < 1 {
+		return 0
+	}
+
+	ID, err := strconv.ParseFloat(keys[0], 10)
+	if err != nil {
+		return 0
+	}
+
+	return float32(ID)
 }

@@ -17,7 +17,7 @@ func GetAccessTokenSecret() string {
 }
 
 // GenerateAccessToken - generates and returns new access token
-func GenerateAccessToken(email string) (string, error) {
+func GenerateAccessToken(email string, IsAdmin bool) (string, error) {
 	// create jwt header
 	// for our use case, we'll be using SHA256 algorithm and type JWT
 	header := Header{
@@ -27,6 +27,7 @@ func GenerateAccessToken(email string) (string, error) {
 	// create payload information
 	payload := Payload{
 		Email:     email,
+		IsAdmin:   IsAdmin,
 		ExpiredAt: time.Now().Unix() + AccessTokenExpiryTime,
 	}
 	// generate and return new access token

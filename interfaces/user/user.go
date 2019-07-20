@@ -1,7 +1,9 @@
 package user
 
-import model "Imdb/model/user"
+import user "Imdb/model/user"
 
+//User it defines the behaviour of user table
 type User interface {
-	Add(user *model.User) (*model.User, error)
+	Add(user *user.User) (*user.User, error)
+	Signin(EmailID string) (user.UserResponse, error)
 }

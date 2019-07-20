@@ -23,3 +23,12 @@ type Role struct {
 	DeletedAt *time.Time
 	Role      string `json:"role"`
 }
+
+//UserResponse Sign In Response of User
+type UserResponse struct {
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
+	Role    bool   `json:"role"`
+}

@@ -35,8 +35,16 @@ movies.imdb_score,
      where movie_genres.movie_id =movies.id
     ) t) 
 from movies
-offset 0 limit 10
+offset 10 limit 10
 
 
 -- _____________________________________________________________________________________________
 
+-- SignIn User
+
+select 
+ur.password ,
+rl.role
+from users ur
+left join roles rl on ur.role_id = rl.id
+where ur.email like 'raviwaghmare2908@gmail.com'

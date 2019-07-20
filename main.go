@@ -7,36 +7,39 @@ import (
 	movieRouter "Imdb/routers/movie"
 	userRouter "Imdb/routers/user"
 	"Imdb/server"
-	"Imdb/token"
+	token "Imdb/token"
 	"log"
 	"os"
 
 	"net/http"
-	"strings"
 )
-
-func sayHello(w http.ResponseWriter, r *http.Request) {
-	message := r.URL.Path
-	message = strings.TrimPrefix(message, "/")
-	message = "Hello " + message
-	w.Write([]byte(message))
-}
 
 func main() {
 	logger := log.New(os.Stdout, "imdb ", log.LstdFlags|log.Lshortfile)
-	db := database.New()
+
+	logger.Println("CONNECT TO DATABASE")
+	db, err := database.New()
+	if err != nil {
+		log.Panic("COULDN'T CONNECT TO DATABASE " + err.Error())
+	}
 	defer db.Close()
-	logger.Println("Database Created")
+
+	logger.Println("START UP SERVER")
 
 	mux := http.NewServeMux()
 	srv := server.New(mux, ":3000")
-	mux.HandleFunc("/", token.JWTMiddleware(sayHello))
-	logger.Println("server starting")
+
+	// generate and set random token key
+	token.SetAccessTokenSecret()
+
 	// create controllers
 	uc := userController.NewUser(db)
 	mv := movieController.NewMovie(db)
+
+	// define routers
 	userRouter.NewUserRouter(uc, logger).Register(mux)
 	movieRouter.NewMovieRouter(mv, logger).Register(mux)
+
 	if err := srv.ListenAndServe(); err != nil {
 		panic(err)
 	}

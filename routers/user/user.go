@@ -2,12 +2,15 @@ package user
 
 import (
 	interfaces "Imdb/interfaces/user"
-	model "Imdb/model/user"
+	user "Imdb/model/user"
+	token "Imdb/token"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"time"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -32,10 +35,11 @@ func NewUserRouter(userController interfaces.User, logger *log.Logger) User {
 
 func (u User) Register(s *http.ServeMux) {
 	s.HandleFunc("/user", u.Logger(u.addUser))
+	s.HandleFunc("/user/signin", u.Logger(u.signin))
 }
 
 func (u User) addUser(w http.ResponseWriter, r *http.Request) {
-	user := &model.User{}
+	user := &user.User{}
 	if err := json.NewDecoder(r.Body).Decode(user); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
@@ -49,4 +53,53 @@ func (u User) addUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Write([]byte("User Created Succcessfully"))
 
+}
+
+func (u User) signin(w http.ResponseWriter, r *http.Request) {
+	type Request struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	type Response struct {
+		User        user.UserResponse
+		AccessToken string
+	}
+
+	request := &Request{}
+	err := json.NewDecoder(r.Body).Decode(request)
+	if err != nil {
+		// If there is something wrong with the request body, return a 400 status
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	userInfo, err := u.userController.Signin(request.Email)
+	if err != nil {
+		// If there is something wrong with the request body, return a 400 status
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("No Such User Exist"))
+		return
+	}
+
+	// Compare the stored hashed password, with the hashed version of the password that was received
+	if err = bcrypt.CompareHashAndPassword([]byte(userInfo.Password), []byte(request.Password)); err != nil {
+		// If the two passwords don't match, return a 401 status
+		w.WriteHeader(http.StatusUnauthorized)
+		return
+	}
+
+	accessToken, err := token.GenerateAccessToken(request.Email, userInfo.Role)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	var response Response
+
+	response.User = userInfo
+	response.AccessToken = accessToken
+
+	b, _ := json.Marshal(response)
+	w.Write(b)
 }
