@@ -95,7 +95,6 @@ func (mv Movie) getMovies(w http.ResponseWriter, r *http.Request) {
 }
 
 func (mv Movie) getMovie(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Called getMovie")
 	MovieID := getQueryKey(r)
 	if MovieID == 0 {
 		w.Write([]byte("Movie ID is missing"))
@@ -113,7 +112,6 @@ func (mv Movie) getMovie(w http.ResponseWriter, r *http.Request) {
 
 func (mv Movie) deleteMovieGenre(w http.ResponseWriter, r *http.Request) {
 	ID := getQueryKey(r)
-	fmt.Println("Delete Movie_ Genre Having ID ", ID)
 	if err := mv.movieController.DeleteMovieGenre(ID); err != nil {
 		fmt.Println(err.Error())
 		w.Write([]byte(err.Error()))
@@ -169,7 +167,6 @@ func (mv Movie) addMovie(w http.ResponseWriter, r *http.Request) {
 
 func (mv Movie) deleteMovie(w http.ResponseWriter, r *http.Request) {
 	movieID := getQueryKey(r)
-	fmt.Println("Delete Movie Having ID ", movieID)
 	if err := mv.movieController.DeleteMovie(movieID); err != nil {
 		fmt.Println(err.Error())
 		w.Write([]byte(err.Error()))
@@ -179,7 +176,6 @@ func (mv Movie) deleteMovie(w http.ResponseWriter, r *http.Request) {
 }
 
 func (mv Movie) updateMovie(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("Called updateMovie")
 	movie := &movie.MovieUpdate{}
 	if err := json.NewDecoder(r.Body).Decode(movie); err != nil {
 		w.WriteHeader(http.StatusBadRequest)

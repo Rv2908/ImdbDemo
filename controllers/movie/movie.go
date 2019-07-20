@@ -232,8 +232,6 @@ func (mv Movie) GetAllMovie(PageNo, PageSize uint, SearchBy string) ([]movie.Mov
 		sqlStatement += ` limit ` + PS + ` offset ` + OFFSET
 	}
 
-	fmt.Println(sqlStatement)
-
 	rows, err := mv.db.Query(sqlStatement)
 	if err != nil {
 		return nil, err
